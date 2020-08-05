@@ -27,6 +27,7 @@ class HashTable:
         else: 
             self.capacity = MIN_CAPACITY
         self.table = [None] * capacity
+        self.size = 0
 
 
     def get_num_slots(self):
@@ -40,6 +41,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return len(self.table)
 
 
     def get_load_factor(self):
@@ -49,6 +51,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.size/self.get_num_slots()
 
 
     def fnv1(self, key):
@@ -92,8 +95,21 @@ class HashTable:
         """
         # Your code here
         index = self.hash_index(key)
-        self.table[index] = value
+        slot = self.table[index]
 
+        self.size += 1
+        if slot is None:
+            self.table[index] = HashTableEntry(key, value)
+            return
+        if slot.key == key:
+            self.table[index] = HashTableEntry(key, value)
+            self.size -= 1
+        prev = slot
+        while slot is not None:
+            prev = slot
+            slot = slot.next
+        prev.next = HashTableEntry(key, value)
+        
 
     def delete(self, key):
         """
@@ -105,7 +121,21 @@ class HashTable:
         """
         # Your code here
         index = self.hash_index(key)
-        self.table[index] = None
+        node = self.table[index]
+        prev = None
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+        if node is None:
+            return None
+        else:
+            self.size -= 1
+            res = node.value
+            if prev is None:
+                self.table[index] = node.next
+            else:
+                prev.next = prev.next.next
+            return res
 
 
     def get(self, key):
@@ -118,7 +148,13 @@ class HashTable:
         """
         # Your code here
         index = self.hash_index(key)
-        return self.table[index]
+        slot = self.table[index]
+        while slot is not None and slot.key != key:
+            slot = slot.next
+        if slot is None:
+            return None
+        else:
+            return slot.value
 
 
     def resize(self, new_capacity):
@@ -129,6 +165,14 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        if self.get_load_factor() > 0.7:
+            old_hashmap = self.table
+            self.table = [None]*new_capacity
+            for node in old_hashmap:
+                while node.next:
+                    self.put(node.key, node.value)
+                    node = node.next
+                self.put(node.key, node.value)
 
 
 
