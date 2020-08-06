@@ -1,6 +1,18 @@
+import re
+calculate = {}
+
 def word_count(s):
     # Your code here
-
+    global calculate
+    filtered_str = re.sub(r"[^\w\d'\s]", '', s)
+    for word in filtered_str.lower().split():
+        if word not in calculate.keys():
+            calculate[word] = 1
+        else:
+            calculate[word] += 1
+    s = calculate
+    calculate = {}
+    return s
 
 
 if __name__ == "__main__":
